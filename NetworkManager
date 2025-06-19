@@ -1,0 +1,22 @@
+using UnityEngine;
+using Photon.Pun;
+using Photon.Realtime;
+
+public class NetworkManager : MonoBehaviourPunCallbacks
+{
+    void Start()
+    {
+        PhotonNetwork.ConnectUsingSettings();
+    }
+
+    public override void OnConnectedToMaster()
+    {
+        PhotonNetwork.JoinOrCreateRoom("Room1", new RoomOptions { MaxPlayers = 8 }, TypedLobby.Default);
+    }
+
+    public override void OnJoinedRoom()
+    {
+        Vector3 spawn = new Vector3(Random.Range(-5, 5), 1, Random.Range(-5, 5));
+        PhotonNetwork.Instantiate("PlayerPrefab", spawn, Quaternion.identity);
+    }
+}
