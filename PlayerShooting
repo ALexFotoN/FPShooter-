@@ -1,0 +1,85 @@
+using UnityEngine;
+using Photon.Pun;
+
+public class PlayerShooting : MonoBehaviourPunCallbacks
+{
+    public int maxAmmo = 10;
+    public float reloadTime = 2f;
+    public float fireRate = 0.25f;
+    public int currentAmmo;
+    public float shootDistance = 100f;
+    public int damage = 25;
+    private float lastShot = 0f;
+    private bool isReloading = false;
+
+    public Camera cam;
+    public UIManager uiManager;
+
+    void Start()
+    {
+        currentAmmo = maxAmmo;
+        if (photonView.IsMine)
+        {
+            uiManager = FindObjectOfType<UIManager>();
+            UpdateUI();
+        }
+    }
+
+    void Update()
+    {
+        if (!photonView.IsMine) return;
+
+        if (isReloading) return;
+
+        if (currentAmmo <= 0)
+        {
+            StartCoroutine(Reload());
+            return;
+        }
+
+        if (Input.GetButtonDown("Fire1") && Time.time - lastShot > fireRate)
+        {
+            Shoot();
+        }
+    }
+
+    void Shoot()
+    {
+        lastShot = Time.time;
+        currentAmmo--;
+        UpdateUI();
+
+        Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        if (Physics.Raycast(ray, out RaycastHit hit, shootDistance))
+        {
+            PhotonView targetView = hit.collider.GetComponent<PhotonView>();
+            if (targetView != null && !targetView.IsMine)
+            {
+                targetView.RPC("TakeDamage", RpcTarget.All, damage);
+            }
+        }
+    }
+
+    System.Collections.IEnumerator Reload()
+    {
+        isReloading = true;
+        uiManager.SetReloading(true);
+        yield return new WaitForSeconds(reloadTime);
+        currentAmmo = maxAmmo;
+        UpdateUI();
+        isReloading = false;
+        uiManager.SetReloading(false);
+    }
+
+    void UpdateUI()
+    {
+        if (uiManager != null)
+            uiManager.SetAmmo(currentAmmo, maxAmmo);
+    }
+
+    [PunRPC]
+    public void TakeDamage(int damage)
+    {
+        GetComponent<PlayerHealth>().ChangeHealth(-damage);
+    }
+}
