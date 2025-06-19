@@ -1,0 +1,39 @@
+using UnityEngine;
+using Photon.Pun;
+
+public class PlayerHealth : MonoBehaviourPunCallbacks
+{
+    public int maxHealth = 100;
+    public int currentHealth;
+    public UIManager uiManager;
+
+    void Start()
+    {
+        currentHealth = maxHealth;
+        if (photonView.IsMine)
+        {
+            uiManager = FindObjectOfType<UIManager>();
+            uiManager.SetHealth(currentHealth, maxHealth);
+        }
+    }
+
+    public void ChangeHealth(int amount)
+    {
+        if (!photonView.IsMine) return;
+
+        currentHealth += amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        uiManager.SetHealth(currentHealth, maxHealth);
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        // Здесь можешь добавить респавн или уничтожение
+        PhotonNetwork.Destroy(gameObject);
+    }
+}
