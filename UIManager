@@ -1,0 +1,24 @@
+using UnityEngine;
+using TMPro; // если используешь TextMeshPro
+
+public class UIManager : MonoBehaviour
+{
+    public TMP_Text ammoText;
+    public TMP_Text healthText;
+    public GameObject reloadText;
+
+    public void SetAmmo(int ammo, int maxAmmo)
+    {
+        ammoText.text = $"Ammo: {ammo} / {maxAmmo}";
+    }
+
+    public void SetHealth(int health, int maxHealth)
+    {
+        healthText.text = $"Health: {health} / {maxHealth}";
+    }
+
+    public void SetReloading(bool isReloading)
+    {
+        reloadText.SetActive(isReloading);
+    }
+}
